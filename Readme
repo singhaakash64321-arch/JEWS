@@ -1,0 +1,27 @@
+GigBudget
+
+GigBudget is a simple web-based budgeting application designed for gig workers to track income, expenses, and estimate weekly earnings using browser storage.
+
+Features
+User signup and login using LocalStorage
+Add and track income and expenses
+Weekly income forecast calculation
+Multi-language interface support
+Responsive and mobile-friendly design
+Tech Stack
+HTML
+CSS
+JavaScript (Vanilla JS)
+Browser LocalStorage
+Dependencies
+
+No external libraries, frameworks, or modules are required; the application runs entirely on native browsertechnologies.
+
+How to Run
+Download or clone the repository
+Open the project folder
+Double-click the index.html file or open it in any web browser
+Project Structure
+index.html – main structure of the app
+style.css – styling and layout
+script.js – application logic
