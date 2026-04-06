@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GigBudget</title>
+  <style>
+    :root {
+      --green: #1d9e75;
+      --amber: #ef9f27;
+      --red: #e53935;
+      --text: #1a1a1a;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #fff;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 32px;
+      -webkit-font-smoothing: antialiased;
+    }
+    body.modal-open { overflow: hidden; }
+    .app { max-width: 400px; margin: 0 auto; }
+
+    .screen {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .screen.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .auth-shell {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px 20px;
+    }
+    .brand-small {
+      color: var(--green);
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+    .auth-title { font-size: 1.35rem; margin-bottom: 6px; }
+    .auth-sub { color: #666; font-size: 0.9rem; margin-bottom: 18px; }
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .field input, .field select {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: #fff;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.2);
+    }
+    .password-wrap { position: relative; }
+    .toggle-eye {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 4px;
+    }
+    .error {
+      color: var(--red);
+      font-size: 0.75rem;
+      margin-top: 4px;
+      min-height: 14px;
+    }
+    .auth-btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-weight: 700;
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      margin-top: 4px;
+      box-shadow: var(--shadow);
+    }
+    .auth-link {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .auth-link button {
+      border: none;
+      background: transparent;
+      color: var(--green);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .lang-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .pill {
+      border: 1px solid var(--green);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      background: #fff;
+      color: var(--green);
+      cursor: pointer;
+    }
+    .pill.active {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .splash-wrap {
+      min-height: calc(100vh - 56px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .splash-name {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: -0.03em;
+    }
+    .splash-tag {
+      color: #555;
+      font-size: 0.95rem;
+    }
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 3px solid #d9efe7;
+      border-top-color: var(--green);
+      animation: spin 0.8s linear infinite;
+      margin-top: 4px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .home-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .home-brand {
+      color: var(--green);
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #e6f5ef;
+      color: var(--green);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .avatar-menu {
+      position: absolute;
+      right: 0;
+      top: 44px;
+      background: #fff;
+      box-shadow: var(--shadow-lg);
+      border-radius: 12px;
+      width: 190px;
+      padding: 10px;
+      display: none;
+      z-index: 20;
+    }
+    .avatar-menu.show { display: block; }
+    .menu-name { font-weight: 700; font-size: 0.88rem; }
+    .menu-lang { color: #666; font-size: 0.8rem; margin: 4px 0 10px; }
+    .menu-logout {
+      border: none;
+      width: 100%;
+      border-radius: 10px;
+      background: #fff3f2;
+      color: var(--red);
+      padding: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    header { margin-bottom: 20px; }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    header .date { font-size: 0.9rem; color: #666; margin-top: 6px; }
+    .stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .stat-card { flex: 1; min-width: 0; margin-bottom: 0; padding: 16px; }
+    .stat-card .label { font-size: 0.8rem; color: #666; font-weight: 500; }
+    .stat-card .amount {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-top: 6px;
+      line-height: 1.1;
+    }
+    .stat-earned .amount { color: var(--green); }
+    .stat-spent .amount { color: var(--red); }
+    .forecast-title, .recent-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #333; }
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 6px;
+      min-height: 140px;
+      padding-bottom: 4px;
+    }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+    .bar {
+      width: 100%;
+      max-width: 44px;
+      border-radius: 8px 8px 4px 4px;
+      min-height: 24px;
+      transition: transform 0.15s ease;
+    }
+    .bar.green { background: var(--green); }
+    .bar.amber { background: var(--amber); }
+    .day-name {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #888;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .day-amount { font-size: 0.7rem; font-weight: 600; color: #444; margin-top: 2px; white-space: nowrap; }
+    .ai-tip-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: #222; }
+    .ai-tip-card p { font-size: 0.9rem; line-height: 1.5; color: #444; }
+    .recent-list { list-style: none; }
+    .recent-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+    .recent-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .recent-row:first-child { padding-top: 0; }
+    .recent-meta { min-width: 0; }
+    .recent-category {
+      font-weight: 600;
+      color: #222;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .recent-date { font-size: 0.75rem; color: #888; margin-top: 2px; }
+    .recent-amount { font-weight: 700; flex-shrink: 0; }
+    .recent-amount.income { color: var(--green); }
+    .recent-amount.expense { color: var(--red); }
+    .recent-empty { font-size: 0.9rem; color: #888; }
+    .actions { display: flex; gap: 12px; margin-top: 8px; }
+    .btn {
+      flex: 1;
+      padding: 16px 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-income { background: var(--green); color: #fff; }
+    .btn-expense { background: #fff; color: var(--green); border: 2px solid var(--green); }
+    .btn-ghost { background: #f0f0f0; color: #333; box-shadow: none; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 16px;
+    }
+    .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
+    @media (min-height: 520px) {
+      .modal-backdrop { align-items: center; }
+    }
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 22px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(16px);
+      transition: transform 0.2s ease;
+    }
+    .modal-backdrop.visible .modal { transform: translateY(0); }
+    .modal h2 { font-size: 1.15rem; margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { margin: 0; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%) translateY(100px);
+      background: #1a1a1a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 1000;
+      max-width: calc(100% - 32px);
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="screen active" id="screenSplash">
+      <div class="splash-wrap">
+        <div class="splash-name">GigBudget</div>
+        <div class="splash-tag">Smart money for gig workers</div>
+        <div class="spinner"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenLogin">
+      <div class="auth-shell">
+        <div class="brand-small">GigBudget</div>
+        <h2 class="auth-title">Welcome back 👋</h2>
+        <p class="auth-sub">Sign in to continue</p>
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" />
+          <div class="error" id="loginEmailErr"></div>
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <div class="password-wrap">
+            <input id="loginPassword" type="password" />
+            <button class="toggle-eye" type="button" id="toggleLoginPw">Show</button>
+          </div>
+          <div class="error" id="loginPasswordErr"></div>
+        </div>
+        <button class="auth-btn" id="btnLogin" type="button">Login</button>
+        <div class="error" id="loginGeneralErr"></div>
+        <div class="auth-link">
+          Don't have an account?
+          <button type="button" id="goSignup">Sign up</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenSignup">
+      <div class="auth-shell">
+        <div class="brand-small">GigBudget</div>
+        <h2 class="auth-title">Create your account</h2>
+        <div class="field">
+          <label for="signupName">Full Name</label>
+          <input id="signupName" type="text" />
+          <div class="error" id="signupNameErr"></div>
+        </div>
+        <div class="field">
+          <label for="signupDob">Date of Birth</label>
+          <input id="signupDob" type="date" />
+          <div class="error" id="signupDobErr"></div>
+        </div>
+        <div class="field">
+          <label for="signupEmail">Email</label>
+          <input id="signupEmail" type="email" />
+          <div class="error" id="signupEmailErr"></div>
+        </div>
+        <div class="field">
+          <label for="signupPassword">Password</label>
+          <div class="password-wrap">
+            <input id="signupPassword" type="password" />
+            <button class="toggle-eye" type="button" id="toggleSignupPw">Show</button>
+          </div>
+          <div class="error" id="signupPasswordErr"></div>
+        </div>
+        <div class="field">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <div class="password-wrap">
+            <input id="signupConfirmPassword" type="password" />
+            <button class="toggle-eye" type="button" id="toggleSignupConfirmPw">Show</button>
+          </div>
+          <div class="error" id="signupConfirmPasswordErr"></div>
+        </div>
+        <div class="field">
+          <label>Language</label>
+          <div class="lang-row" id="langRow"></div>
+          <div class="error" id="signupLanguageErr"></div>
+        </div>
+        <button class="auth-btn" id="btnSignup" type="button">Sign Up</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screenHome">
+      <div class="home-topbar">
+        <div class="home-brand">GigBudget</div>
+        <button class="avatar-btn" id="avatarBtn" type="button">GB</button>
+        <div class="avatar-menu" id="avatarMenu">
+          <div class="menu-name" id="menuName"></div>
+          <div class="menu-lang" id="menuLang"></div>
+          <button class="menu-logout" id="logoutBtn" type="button">Log out</button>
+        </div>
+      </div>
+
+      <header>
+        <h1 id="greetingText">Hey Ravi 👋</h1>
+        <p class="date" id="todayDate"></p>
+      </header>
+
+      <div class="stats-row">
+        <section class="card stat-card stat-earned">
+          <p class="label" id="earnedLabel">Earned today</p>
+          <p class="amount" id="earnedToday">₹0</p>
+        </section>
+        <section class="card stat-card stat-spent">
+          <p class="label" id="spentLabel">Spent today</p>
+          <p class="amount" id="spentToday">₹0</p>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2 class="forecast-title" id="forecastTitle">This week forecast</h2>
+        <div class="bars" id="forecastBars" aria-label="Weekly income forecast"></div>
+      </section>
+
+      <section class="card ai-tip-card">
+        <h2 id="aiTipTitle">AI Tip 💡</h2>
+        <p id="aiTipText">
+          You earned well today — that's above your usual average. The next 2 days look lean. Set aside ₹200 now so Thursday and Friday don't stress you out.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2 class="recent-title" id="recentTitle">Recent entries</h2>
+        <ul class="recent-list" id="recentList"></ul>
+      </section>
+
+      <div class="actions">
+        <button type="button" class="btn btn-income" id="btnIncome">Log Income</button>
+        <button type="button" class="btn btn-expense" id="btnExpense">Log Expense</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Log Income</h2>
+      <div class="field">
+        <label id="modalAmountLabel" for="fieldAmount">Amount (₹)</label>
+        <input type="number" id="fieldAmount" inputmode="decimal" min="0" step="1" placeholder="0" />
+      </div>
+      <div class="field">
+        <label id="modalCategoryLabel" for="fieldCategory">Category</label>
+        <select id="fieldCategory"></select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="modalCancel">Cancel</button>
+        <button type="button" class="btn btn-income" id="modalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Saved ✓</div>
+
+  <script>
+    (function () {
+      var STORAGE_USER_KEY = "gigbudget_user";
+      var STORAGE_ENTRIES_KEY = "gigbudget_entries";
+      var BAR_MAX_PX = 100;
+      var currentScreen = "splash";
+      var selectedSignupLanguage = "en";
+      var modalType = "income";
+
+      var translations = {
+        en: {
+          langName: "English",
+          hey: "Hey",
+          earnedToday: "Earned today",
+          spentToday: "Spent today",
+          thisWeekForecast: "This week forecast",
+          aiTip: "AI Tip 💡",
+          aiTipText: "You earned well today — that's above your usual average. The next 2 days look lean. Set aside ₹200 now so Thursday and Friday don't stress you out.",
+          recentEntries: "Recent entries",
+          logIncome: "Log Income",
+          logExpense: "Log Expense",
+          modalLogIncome: "Log Income",
+          modalLogExpense: "Log Expense",
+          save: "Save",
+          cancel: "Cancel",
+          savedToast: "Saved ✓",
+          category: "Category",
+          amount: "Amount (₹)",
+          noEntries: "No entries yet.",
+          logout: "Log out",
+          days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          categories: {
+            delivery: "Delivery",
+            freelance: "Freelance",
+            labour: "Labour",
+            tuition: "Tuition",
+            other: "Other",
+            food: "Food",
+            fuel: "Fuel",
+            rent: "Rent",
+            mobile: "Mobile"
+          }
+        },
+        hi: {
+          langName: "हिंदी",
+          hey: "नमस्ते",
+          earnedToday: "आज की कमाई",
+          spentToday: "आज का खर्च",
+          thisWeekForecast: "इस हफ्ते का अनुमान",
+          aiTip: "AI सुझाव 💡",
+          aiTipText: "आज आपकी कमाई अच्छी रही — यह आपके सामान्य औसत से अधिक है। अगले 2 दिन कमज़ोर दिख रहे हैं। अभी ₹200 अलग रख दें ताकि गुरुवार और शुक्रवार तनाव न दें।",
+          recentEntries: "हाल की एंट्रियां",
+          logIncome: "आय जोड़ें",
+          logExpense: "खर्च जोड़ें",
+          modalLogIncome: "आय जोड़ें",
+          modalLogExpense: "खर्च जोड़ें",
+          save: "सेव करें",
+          cancel: "रद्द करें",
+          savedToast: "सेव हो गया ✓",
+          category: "श्रेणी",
+          amount: "राशि (₹)",
+          noEntries: "अभी कोई एंट्री नहीं।",
+          logout: "लॉग आउट",
+          days: ["सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि", "रवि"],
+          categories: {
+            delivery: "डिलीवरी",
+            freelance: "फ्रीलांस",
+            labour: "मजदूरी",
+            tuition: "ट्यूशन",
+            other: "अन्य",
+            food: "खाना",
+            fuel: "ईंधन",
+            rent: "किराया",
+            mobile: "मोबाइल"
+          }
+        },
+        kn: {
+          langName: "ಕನ್ನಡ",
+          hey: "ಹಾಯ್",
+          earnedToday: "ಇಂದಿನ ಆದಾಯ",
+          spentToday: "ಇಂದಿನ ಖರ್ಚು",
+          thisWeekForecast: "ಈ ವಾರದ ಮುನ್ನೋಟ",
+          aiTip: "AI ಟಿಪ್ 💡",
+          aiTipText: "ಇಂದು ನೀವು ಚೆನ್ನಾಗಿ ಗಳಿಸಿದ್ದೀರಿ — ಇದು ನಿಮ್ಮ ಸಾಮಾನ್ಯ ಸರಾಸರಿಗಿಂತ ಹೆಚ್ಚು. ಮುಂದಿನ 2 ದಿನಗಳು ಕಡಿಮೆ ಕಾಣುತ್ತಿವೆ. ಗುರುವಾರ ಮತ್ತು ಶುಕ್ರವಾರ ಒತ್ತಡವಾಗದಂತೆ ಈಗಲೇ ₹200 ಬೇರ್ಪಡಿಸಿ.",
+          recentEntries: "ಇತ್ತೀಚಿನ ನಮೂದುಗಳು",
+          logIncome: "ಆದಾಯ ದಾಖಲಿಸಿ",
+          logExpense: "ಖರ್ಚು ದಾಖಲಿಸಿ",
+          modalLogIncome: "ಆದಾಯ ದಾಖಲಿಸಿ",
+          modalLogExpense: "ಖರ್ಚು ದಾಖಲಿಸಿ",
+          save: "ಉಳಿಸಿ",
+          cancel: "ರದ್ದು",
+          savedToast: "ಉಳಿಸಲಾಗಿದೆ ✓",
+          category: "ವರ್ಗ",
+          amount: "ಮೊತ್ತ (₹)",
+          noEntries: "ಇನ್ನೂ ಯಾವುದೇ ನಮೂದುಗಳಿಲ್ಲ.",
+          logout: "ಲಾಗ್ ಔಟ್",
+          days: ["ಸೋಮ", "ಮಂಗಳ", "ಬುಧ", "ಗುರು", "ಶುಕ್ರ", "ಶನಿ", "ಭಾನು"],
+          categories: {
+            delivery: "ಡೆಲಿವರಿ",
+            freelance: "ಫ್ರೀಲಾನ್ಸ್",
+            labour: "ಕಾರ್ಮಿಕ",
+            tuition: "ಟ್ಯೂಷನ್",
+            other: "ಇತರೆ",
+            food: "ಆಹಾರ",
+            fuel: "ಇಂಧನ",
+            rent: "ಬಾಡಿಗೆ",
+            mobile: "ಮೊಬೈಲ್"
+          }
+        },
+        te: {
+          langName: "తెలుగు",
+          hey: "హాయ్",
+          earnedToday: "ఈరోజు ఆదాయం",
+          spentToday: "ఈరోజు ఖర్చు",
+          thisWeekForecast: "ఈ వారం అంచనా",
+          aiTip: "AI చిట్కా 💡",
+          aiTipText: "ఈ రోజు మీ ఆదాయం బాగుంది — ఇది మీ సాధారణ సగటు కంటే ఎక్కువ. వచ్చే 2 రోజులు తక్కువగా కనిపిస్తున్నాయి. గురు, శుక్రవారాల్లో ఒత్తిడి లేకుండా ఇప్పుడే ₹200 విడిగా పెట్టండి.",
+          recentEntries: "ఇటీవలి ఎంట్రీలు",
+          logIncome: "ఆదాయం నమోదు",
+          logExpense: "ఖర్చు నమోదు",
+          modalLogIncome: "ఆదాయం నమోదు",
+          modalLogExpense: "ఖర్చు నమోదు",
+          save: "సేవ్ చేయండి",
+          cancel: "రద్దు",
+          savedToast: "సేవ్ అయింది ✓",
+          category: "వర్గం",
+          amount: "మొత్తం (₹)",
+          noEntries: "ఇంకా ఎంట్రీలు లేవు.",
+          logout: "లాగ్ అవుట్",
+          days: ["సోమ", "మంగళ", "బుధ", "గురు", "శుక్ర", "శని", "ఆది"],
+          categories: {
+            delivery: "డెలివరీ",
+            freelance: "ఫ్రీలాన్స్",
+            labour: "కూలి",
+            tuition: "ట్యూషన్",
+            other: "ఇతర",
+            food: "ఆహారం",
+            fuel: "ఇంధనం",
+            rent: "అద్దె",
+            mobile: "మొబైల్"
+          }
+        },
+        ml: {
+          langName: "മലയാളം",
+          hey: "ഹായ്",
+          earnedToday: "ഇന്നത്തെ വരുമാനം",
+          spentToday: "ഇന്നത്തെ ചെലവ്",
+          thisWeekForecast: "ഈ ആഴ്ച പ്രവചനം",
+          aiTip: "AI നിർദ്ദേശം 💡",
+          aiTipText: "ഇന്ന് നിങ്ങൾ നന്നായി സമ്പാദിച്ചു — ഇത് നിങ്ങളുടെ സാധാരണ ശരാശരിയേക്കാൾ കൂടുതലാണ്. അടുത്ത 2 ദിവസങ്ങൾ കുറവായിരിക്കും. വ്യാഴം, വെള്ളി ദിവസങ്ങളിൽ സമ്മർദ്ദം വരാതിരിക്കാൻ ഇപ്പോൾ ₹200 മാറ്റിവെക്കൂ.",
+          recentEntries: "സമീപകാല എൻട്രികൾ",
+          logIncome: "വരുമാനം ചേർക്കുക",
+          logExpense: "ചെലവ് ചേർക്കുക",
+          modalLogIncome: "വരുമാനം ചേർക്കുക",
+          modalLogExpense: "ചെലവ് ചേർക്കുക",
+          save: "സേവ്",
+          cancel: "റദ്ദാക്കുക",
+          savedToast: "സേവ് ചെയ്തു ✓",
+          category: "വിഭാഗം",
+          amount: "തുക (₹)",
+          noEntries: "ഇനിയും എൻട്രികളില്ല.",
+          logout: "ലോഗ് ഔട്ട്",
+          days: ["തിങ്ക", "ചൊവ്വ", "ബുധ", "വ്യാഴ", "വെള്ളി", "ശനി", "ഞായർ"],
+          categories: {
+            delivery: "ഡെലിവറി",
+            freelance: "ഫ്രീലാൻസ്",
+            labour: "തൊഴിൽ",
+            tuition: "ട്യൂഷൻ",
+            other: "മറ്റ്",
+            food: "ഭക്ഷണം",
+            fuel: "ഇന്ധനം",
+            rent: "വാടക",
+            mobile: "മൊബൈൽ"
+          }
+        }
+      };
+      var languageButtons = [
+        { code: "en", label: "English" },
+        { code: "hi", label: "हिंदी" },
+        { code: "kn", label: "ಕನ್ನಡ" },
+        { code: "te", label: "తెలుగు" },
+        { code: "ml", label: "മലയാളം" }
+      ];
+      var categoryKeys = ["delivery", "freelance", "labour", "tuition", "other", "food", "fuel", "rent", "mobile"];
+      var dayOrder = [1, 2, 3, 4, 5, 6, 0];
+
+      var screens = {
+        splash: document.getElementById("screenSplash"),
+        login: document.getElementById("screenLogin"),
+        signup: document.getElementById("screenSignup"),
+        home: document.getElementById("screenHome")
+      };
+      var els = {
+        greetingText: document.getElementById("greetingText"),
+        todayDate: document.getElementById("todayDate"),
+        earnedLabel: document.getElementById("earnedLabel"),
+        spentLabel: document.getElementById("spentLabel"),
+        forecastTitle: document.getElementById("forecastTitle"),
+        aiTipTitle: document.getElementById("aiTipTitle"),
+        aiTipText: document.getElementById("aiTipText"),
+        recentTitle: document.getElementById("recentTitle"),
+        earnedToday: document.getElementById("earnedToday"),
+        spentToday: document.getElementById("spentToday"),
+        forecastBars: document.getElementById("forecastBars"),
+        recentList: document.getElementById("recentList"),
+        btnIncome: document.getElementById("btnIncome"),
+        btnExpense: document.getElementById("btnExpense"),
+        avatarBtn: document.getElementById("avatarBtn"),
+        avatarMenu: document.getElementById("avatarMenu"),
+        menuName: document.getElementById("menuName"),
+        menuLang: document.getElementById("menuLang"),
+        logoutBtn: document.getElementById("logoutBtn"),
+        modalBackdrop: document.getElementById("modalBackdrop"),
+        modalTitle: document.getElementById("modalTitle"),
+        modalAmountLabel: document.getElementById("modalAmountLabel"),
+        modalCategoryLabel: document.getElementById("modalCategoryLabel"),
+        fieldAmount: document.getElementById("fieldAmount"),
+        fieldCategory: document.getElementById("fieldCategory"),
+        modalCancel: document.getElementById("modalCancel"),
+        modalSave: document.getElementById("modalSave"),
+        toast: document.getElementById("toast"),
+        loginEmail: document.getElementById("loginEmail"),
+        loginPassword: document.getElementById("loginPassword"),
+        loginEmailErr: document.getElementById("loginEmailErr"),
+        loginPasswordErr: document.getElementById("loginPasswordErr"),
+        loginGeneralErr: document.getElementById("loginGeneralErr"),
+        btnLogin: document.getElementById("btnLogin"),
+        goSignup: document.getElementById("goSignup"),
+        signupName: document.getElementById("signupName"),
+        signupDob: document.getElementById("signupDob"),
+        signupEmail: document.getElementById("signupEmail"),
+        signupPassword: document.getElementById("signupPassword"),
+        signupConfirmPassword: document.getElementById("signupConfirmPassword"),
+        signupNameErr: document.getElementById("signupNameErr"),
+        signupDobErr: document.getElementById("signupDobErr"),
+        signupEmailErr: document.getElementById("signupEmailErr"),
+        signupPasswordErr: document.getElementById("signupPasswordErr"),
+        signupConfirmPasswordErr: document.getElementById("signupConfirmPasswordErr"),
+        signupLanguageErr: document.getElementById("signupLanguageErr"),
+        btnSignup: document.getElementById("btnSignup"),
+        langRow: document.getElementById("langRow")
+      };
+      var toastTimer;
+
+      function loadUser() {
+        try {
+          var raw = localStorage.getItem(STORAGE_USER_KEY);
+          if (!raw) return null;
+          var user = JSON.parse(raw);
+          return user && user.email ? user : null;
+        } catch (e) {
+          return null;
+        }
+      }
+      function saveUser(user) {
+        localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
+      }
+      function loadEntries() {
+        try {
+          var raw = localStorage.getItem(STORAGE_ENTRIES_KEY);
+          if (!raw) return [];
+          var arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) {
+          return [];
+        }
+      }
+      function saveEntries(entries) {
+        localStorage.setItem(STORAGE_ENTRIES_KEY, JSON.stringify(entries));
+      }
+      function t() {
+        var u = loadUser();
+        var code = u && u.language ? u.language : "en";
+        return translations[code] || translations.en;
+      }
+      function pad2(n) { return n < 10 ? "0" + n : String(n); }
+      function formatDate(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+      function parseYMD(s) {
+        var p = s.split("-");
+        return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+      }
+      function isValidEmail(v) {
+        return v.indexOf("@") > 0 && v.indexOf(".") > v.indexOf("@") + 1;
+      }
+      function clearErrors(ids) {
+        for (var i = 0; i < ids.length; i++) els[ids[i]].textContent = "";
+      }
+      function switchScreen(name) {
+        currentScreen = name;
+        for (var key in screens) {
+          if (!Object.prototype.hasOwnProperty.call(screens, key)) continue;
+          screens[key].classList.remove("active");
+        }
+        screens[name].classList.add("active");
+      }
+      function getInitials(name) {
+        var parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return "GB";
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+      }
+      function showToast() {
+        els.toast.textContent = t().savedToast;
+        els.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          els.toast.classList.remove("show");
+        }, 2200);
+      }
+
+      function seedIfEmpty() {
+        var entries = loadEntries();
+        if (entries.length > 0) return;
+        var seeded = [];
+        for (var i = 13; i >= 0; i--) {
+          var d = new Date();
+          d.setHours(12, 0, 0, 0);
+          d.setDate(d.getDate() - i);
+          var dow = d.getDay();
+          var isWeekend = dow === 0 || dow === 6;
+          var min = isWeekend ? 700 : 400;
+          var max = isWeekend ? 1400 : 1100;
+          seeded.push({
+            amount: Math.floor(Math.random() * (max - min + 1)) + min,
+            category: categoryKeys[Math.floor(Math.random() * 5)],
+            date: formatDate(d),
+            type: "income"
+          });
+        }
+        saveEntries(seeded);
+      }
+      function inLast14Days(dateStr, todayStr) {
+        var tms = parseYMD(todayStr).getTime();
+        var xms = parseYMD(dateStr).getTime();
+        var min = tms - 13 * 86400000;
+        return xms >= min && xms <= tms;
+      }
+      function sumForDay(entries, dateStr, type) {
+        var sum = 0;
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          if (e.date === dateStr && e.type === type) sum += Number(e.amount) || 0;
+        }
+        return sum;
+      }
+      function dailyIncomeByDate(entries, todayStr) {
+        var map = {};
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          if (e.type !== "income") continue;
+          if (!inLast14Days(e.date, todayStr)) continue;
+          if (!map[e.date]) map[e.date] = 0;
+          map[e.date] += Number(e.amount) || 0;
+        }
+        return map;
+      }
+      function weekdayForecast(entries, todayStr) {
+        var byDate = dailyIncomeByDate(entries, todayStr);
+        var byWeekday = [[], [], [], [], [], [], []];
+        for (var dateStr in byDate) {
+          if (!Object.prototype.hasOwnProperty.call(byDate, dateStr)) continue;
+          byWeekday[parseYMD(dateStr).getDay()].push(byDate[dateStr]);
+        }
+        var out = [];
+        for (var i = 0; i < dayOrder.length; i++) {
+          var wd = dayOrder[i];
+          var list = byWeekday[wd];
+          var avg = 0;
+          if (list.length) {
+            var s = 0;
+            for (var j = 0; j < list.length; j++) s += list[j];
+            avg = Math.round(s / list.length);
+          }
+          out.push({ weekdayIndex: wd, amount: avg });
+        }
+        return out;
+      }
+      function barTone(amounts) {
+        var copy = amounts.slice().sort(function (a, b) { return a - b; });
+        var mid = copy[Math.floor((copy.length - 1) / 2)];
+        return function (amt) { return amt < mid ? "amber" : "green"; };
+      }
+      function translateCategory(categoryValue, lang) {
+        return translations[lang].categories[categoryValue] || categoryValue || "—";
+      }
+
+      function applyHomeTranslations() {
+        var tx = t();
+        var user = loadUser() || {};
+        els.greetingText.textContent = tx.hey + " " + (user.name || "Ravi") + " 👋";
+        els.earnedLabel.textContent = tx.earnedToday;
+        els.spentLabel.textContent = tx.spentToday;
+        els.forecastTitle.textContent = tx.thisWeekForecast;
+        els.aiTipTitle.textContent = tx.aiTip;
+        els.aiTipText.textContent = tx.aiTipText;
+        els.recentTitle.textContent = tx.recentEntries;
+        els.btnIncome.textContent = tx.logIncome;
+        els.btnExpense.textContent = tx.logExpense;
+        els.modalSave.textContent = tx.save;
+        els.modalCancel.textContent = tx.cancel;
+        els.modalCategoryLabel.textContent = tx.category;
+        els.modalAmountLabel.textContent = tx.amount;
+        els.logoutBtn.textContent = tx.logout;
+        els.menuName.textContent = user.name || "";
+        els.menuLang.textContent = tx.langName;
+        els.avatarBtn.textContent = getInitials(user.name);
+      }
+      function refreshCategoryOptions() {
+        var tx = t();
+        els.fieldCategory.innerHTML = "";
+        for (var i = 0; i < categoryKeys.length; i++) {
+          var key = categoryKeys[i];
+          var opt = document.createElement("option");
+          opt.value = key;
+          opt.textContent = tx.categories[key];
+          els.fieldCategory.appendChild(opt);
+        }
+      }
+
+      function renderHomeData() {
+        seedIfEmpty();
+        applyHomeTranslations();
+        refreshCategoryOptions();
+        var entries = loadEntries();
+        var user = loadUser();
+        var tx = t();
+        var today = formatDate(new Date());
+        els.todayDate.textContent = new Date().toLocaleDateString("en-IN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+        var earned = sumForDay(entries, today, "income");
+        var spent = sumForDay(entries, today, "expense");
+        els.earnedToday.textContent = "₹" + earned.toLocaleString("en-IN");
+        els.spentToday.textContent = "₹" + spent.toLocaleString("en-IN");
+
+        var forecast = weekdayForecast(entries, today);
+        var amounts = forecast.map(function (r) { return r.amount; });
+        var maxBar = Math.max.apply(null, amounts.concat([1]));
+        var toneFn = barTone(amounts);
+        els.forecastBars.innerHTML = "";
+        for (var i = 0; i < forecast.length; i++) {
+          var row = forecast[i];
+          var h = Math.max(24, Math.round((row.amount / maxBar) * BAR_MAX_PX));
+          var tone = row.amount === 0 ? "amber" : toneFn(row.amount);
+          var col = document.createElement("div");
+          col.className = "bar-col";
+          col.innerHTML =
+            '<div class="bar ' + tone + '" style="height:' + h + 'px" role="img"></div>' +
+            '<span class="day-name">' + tx.days[i] + "</span>" +
+            '<span class="day-amount">₹' + row.amount.toLocaleString("en-IN") + "</span>";
+          els.forecastBars.appendChild(col);
+        }
+
+        var sorted = entries.map(function (e, idx) { return { e: e, idx: idx }; }).sort(function (a, b) {
+          var c = b.e.date.localeCompare(a.e.date);
+          if (c !== 0) return c;
+          return b.idx - a.idx;
+        });
+        var last5 = sorted.slice(0, 5);
+        els.recentList.innerHTML = "";
+        if (!last5.length) {
+          var empty = document.createElement("p");
+          empty.className = "recent-empty";
+          empty.textContent = tx.noEntries;
+          els.recentList.appendChild(empty);
+        } else {
+          for (var j = 0; j < last5.length; j++) {
+            var item = last5[j].e;
+            var li = document.createElement("li");
+            li.className = "recent-row";
+            var sign = item.type === "income" ? "+" : "−";
+            var cls = item.type === "income" ? "income" : "expense";
+            li.innerHTML =
+              '<div class="recent-meta"><div class="recent-category"></div><div class="recent-date"></div></div>' +
+              '<span class="recent-amount ' + cls + '"></span>';
+            li.querySelector(".recent-category").textContent = translateCategory(item.category, user.language || "en");
+            li.querySelector(".recent-date").textContent = item.date;
+            li.querySelector(".recent-amount").textContent = sign + "₹" + (Number(item.amount) || 0).toLocaleString("en-IN");
+            els.recentList.appendChild(li);
+          }
+        }
+      }
+
+      function openModal(type) {
+        modalType = type;
+        var tx = t();
+        els.modalTitle.textContent = type === "income" ? tx.modalLogIncome : tx.modalLogExpense;
+        els.fieldAmount.value = "";
+        els.fieldCategory.value = "delivery";
+        els.modalBackdrop.classList.add("visible");
+        els.modalBackdrop.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        setTimeout(function () { els.fieldAmount.focus(); }, 80);
+      }
+      function closeModal() {
+        els.modalBackdrop.classList.remove("visible");
+        els.modalBackdrop.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+      }
+      function saveModalEntry() {
+        var rawAmt = String(els.fieldAmount.value).trim();
+        var amt = parseFloat(rawAmt);
+        if (rawAmt === "" || isNaN(amt) || amt < 0) {
+          els.fieldAmount.focus();
+          return;
+        }
+        var entry = {
+          amount: Math.round(amt * 100) / 100,
+          category: els.fieldCategory.value || "other",
+          date: formatDate(new Date()),
+          type: modalType
+        };
+        var entries = loadEntries();
+        entries.push(entry);
+        saveEntries(entries);
+        closeModal();
+        showToast();
+        renderHomeData();
+      }
+
+      function renderLanguagePills() {
+        els.langRow.innerHTML = "";
+        for (var i = 0; i < languageButtons.length; i++) {
+          var b = languageButtons[i];
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pill" + (selectedSignupLanguage === b.code ? " active" : "");
+          btn.textContent = b.label;
+          btn.dataset.lang = b.code;
+          btn.addEventListener("click", function (ev) {
+            selectedSignupLanguage = ev.currentTarget.dataset.lang;
+            renderLanguagePills();
+            els.signupLanguageErr.textContent = "";
+          });
+          els.langRow.appendChild(btn);
+        }
+      }
+
+      function handleLogin() {
+        clearErrors(["loginEmailErr", "loginPasswordErr", "loginGeneralErr"]);
+        var email = String(els.loginEmail.value).trim();
+        var password = String(els.loginPassword.value);
+        var bad = false;
+        if (!isValidEmail(email)) { els.loginEmailErr.textContent = "Enter a valid email."; bad = true; }
+        if (password.length < 6) { els.loginPasswordErr.textContent = "Password must be at least 6 characters."; bad = true; }
+        if (bad) return;
+        var user = loadUser();
+        if (!user || user.email !== email || user.password !== password) {
+          els.loginGeneralErr.textContent = "No account found. Please sign up.";
+          return;
+        }
+        renderHomeData();
+        switchScreen("home");
+      }
+
+      function handleSignup() {
+        clearErrors(["signupNameErr", "signupDobErr", "signupEmailErr", "signupPasswordErr", "signupConfirmPasswordErr", "signupLanguageErr"]);
+        var name = String(els.signupName.value).trim();
+        var dob = String(els.signupDob.value).trim();
+        var email = String(els.signupEmail.value).trim();
+        var pw = String(els.signupPassword.value);
+        var cpw = String(els.signupConfirmPassword.value);
+        var bad = false;
+        if (!name) { els.signupNameErr.textContent = "Name is required."; bad = true; }
+        if (!dob) { els.signupDobErr.textContent = "Date of birth is required."; bad = true; }
+        if (!isValidEmail(email)) { els.signupEmailErr.textContent = "Enter a valid email."; bad = true; }
+        if (pw.length < 6) { els.signupPasswordErr.textContent = "Password must be at least 6 characters."; bad = true; }
+        if (cpw !== pw) { els.signupConfirmPasswordErr.textContent = "Passwords do not match."; bad = true; }
+        if (!selectedSignupLanguage) { els.signupLanguageErr.textContent = "Please select a language."; bad = true; }
+        if (bad) return;
+        saveUser({
+          name: name,
+          dob: dob,
+          email: email,
+          password: pw,
+          language: selectedSignupLanguage
+        });
+        renderHomeData();
+        switchScreen("home");
+      }
+
+      function bindAuthEvents() {
+        document.getElementById("toggleLoginPw").addEventListener("click", function () {
+          var isPw = els.loginPassword.type === "password";
+          els.loginPassword.type = isPw ? "text" : "password";
+          this.textContent = isPw ? "Hide" : "Show";
+        });
+        document.getElementById("toggleSignupPw").addEventListener("click", function () {
+          var isPw = els.signupPassword.type === "password";
+          els.signupPassword.type = isPw ? "text" : "password";
+          this.textContent = isPw ? "Hide" : "Show";
+        });
+        document.getElementById("toggleSignupConfirmPw").addEventListener("click", function () {
+          var isPw = els.signupConfirmPassword.type === "password";
+          els.signupConfirmPassword.type = isPw ? "text" : "password";
+          this.textContent = isPw ? "Hide" : "Show";
+        });
+        els.btnLogin.addEventListener("click", handleLogin);
+        els.goSignup.addEventListener("click", function () { switchScreen("signup"); });
+        els.btnSignup.addEventListener("click", handleSignup);
+      }
+      function bindHomeEvents() {
+        els.btnIncome.addEventListener("click", function () { openModal("income"); });
+        els.btnExpense.addEventListener("click", function () { openModal("expense"); });
+        els.modalCancel.addEventListener("click", closeModal);
+        els.modalSave.addEventListener("click", saveModalEntry);
+        els.modalBackdrop.addEventListener("click", function (ev) { if (ev.target === els.modalBackdrop) closeModal(); });
+        document.addEventListener("keydown", function (ev) {
+          if (ev.key === "Escape" && els.modalBackdrop.classList.contains("visible")) closeModal();
+        });
+        els.avatarBtn.addEventListener("click", function () {
+          els.avatarMenu.classList.toggle("show");
+        });
+        document.addEventListener("click", function (ev) {
+          if (!els.avatarMenu.contains(ev.target) && ev.target !== els.avatarBtn) {
+            els.avatarMenu.classList.remove("show");
+          }
+        });
+        els.logoutBtn.addEventListener("click", function () {
+          localStorage.removeItem(STORAGE_USER_KEY);
+          els.avatarMenu.classList.remove("show");
+          switchScreen("login");
+        });
+      }
+      function start() {
+        renderLanguagePills();
+        bindAuthEvents();
+        bindHomeEvents();
+        switchScreen("splash");
+        setTimeout(function () {
+          var user = loadUser();
+          if (user) {
+            renderHomeData();
+            switchScreen("home");
+          } else {
+            switchScreen("login");
+          }
+        }, 2000);
+      }
+      start();
+    })();
+  </script>
+</body>
+</html>
