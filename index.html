@@ -4,365 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GigBudget</title>
-  <style>
-    :root {
-      --green: #1d9e75;
-      --amber: #ef9f27;
-      --red: #e53935;
-      --text: #1a1a1a;
-      --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #fff;
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px 16px 32px;
-      -webkit-font-smoothing: antialiased;
-    }
-    body.modal-open { overflow: hidden; }
-    .app { max-width: 400px; margin: 0 auto; }
-
-    .screen {
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .screen.active {
-      display: block;
-      opacity: 1;
-    }
-
-    .auth-shell {
-      max-width: 400px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      padding: 24px 20px;
-    }
-    .brand-small {
-      color: var(--green);
-      font-weight: 800;
-      font-size: 1rem;
-      margin-bottom: 14px;
-    }
-    .auth-title { font-size: 1.35rem; margin-bottom: 6px; }
-    .auth-sub { color: #666; font-size: 0.9rem; margin-bottom: 18px; }
-    .field { margin-bottom: 12px; }
-    .field label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #555;
-      margin-bottom: 6px;
-    }
-    .field input, .field select {
-      width: 100%;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 1rem;
-      font-family: inherit;
-      background: #fff;
-    }
-    .field input:focus, .field select:focus {
-      outline: none;
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.2);
-    }
-    .password-wrap { position: relative; }
-    .toggle-eye {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      border: none;
-      background: transparent;
-      color: #666;
-      cursor: pointer;
-      font-size: 0.8rem;
-      padding: 4px;
-    }
-    .error {
-      color: var(--red);
-      font-size: 0.75rem;
-      margin-top: 4px;
-      min-height: 14px;
-    }
-    .auth-btn {
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      padding: 14px;
-      font-weight: 700;
-      background: var(--green);
-      color: #fff;
-      cursor: pointer;
-      margin-top: 4px;
-      box-shadow: var(--shadow);
-    }
-    .auth-link {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-    .auth-link button {
-      border: none;
-      background: transparent;
-      color: var(--green);
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-    .lang-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .pill {
-      border: 1px solid var(--green);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 0.82rem;
-      background: #fff;
-      color: var(--green);
-      cursor: pointer;
-    }
-    .pill.active {
-      background: var(--green);
-      color: #fff;
-    }
-
-    .splash-wrap {
-      min-height: calc(100vh - 56px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .splash-name {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--green);
-      letter-spacing: -0.03em;
-    }
-    .splash-tag {
-      color: #555;
-      font-size: 0.95rem;
-    }
-    .spinner {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 3px solid #d9efe7;
-      border-top-color: var(--green);
-      animation: spin 0.8s linear infinite;
-      margin-top: 4px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .home-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    .home-brand {
-      color: var(--green);
-      font-weight: 800;
-      font-size: 1rem;
-    }
-    .avatar-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: none;
-      background: #e6f5ef;
-      color: var(--green);
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .avatar-menu {
-      position: absolute;
-      right: 0;
-      top: 44px;
-      background: #fff;
-      box-shadow: var(--shadow-lg);
-      border-radius: 12px;
-      width: 190px;
-      padding: 10px;
-      display: none;
-      z-index: 20;
-    }
-    .avatar-menu.show { display: block; }
-    .menu-name { font-weight: 700; font-size: 0.88rem; }
-    .menu-lang { color: #666; font-size: 0.8rem; margin: 4px 0 10px; }
-    .menu-logout {
-      border: none;
-      width: 100%;
-      border-radius: 10px;
-      background: #fff3f2;
-      color: var(--red);
-      padding: 8px;
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    header { margin-bottom: 20px; }
-    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
-    header .date { font-size: 0.9rem; color: #666; margin-top: 6px; }
-    .stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: var(--shadow);
-      margin-bottom: 16px;
-    }
-    .stat-card { flex: 1; min-width: 0; margin-bottom: 0; padding: 16px; }
-    .stat-card .label { font-size: 0.8rem; color: #666; font-weight: 500; }
-    .stat-card .amount {
-      font-size: 1.65rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-top: 6px;
-      line-height: 1.1;
-    }
-    .stat-earned .amount { color: var(--green); }
-    .stat-spent .amount { color: var(--red); }
-    .forecast-title, .recent-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #333; }
-    .bars {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 6px;
-      min-height: 140px;
-      padding-bottom: 4px;
-    }
-    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
-    .bar {
-      width: 100%;
-      max-width: 44px;
-      border-radius: 8px 8px 4px 4px;
-      min-height: 24px;
-      transition: transform 0.15s ease;
-    }
-    .bar.green { background: var(--green); }
-    .bar.amber { background: var(--amber); }
-    .day-name {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: #888;
-      margin-top: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-    .day-amount { font-size: 0.7rem; font-weight: 600; color: #444; margin-top: 2px; white-space: nowrap; }
-    .ai-tip-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: #222; }
-    .ai-tip-card p { font-size: 0.9rem; line-height: 1.5; color: #444; }
-    .recent-list { list-style: none; }
-    .recent-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-      font-size: 0.9rem;
-    }
-    .recent-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .recent-row:first-child { padding-top: 0; }
-    .recent-meta { min-width: 0; }
-    .recent-category {
-      font-weight: 600;
-      color: #222;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .recent-date { font-size: 0.75rem; color: #888; margin-top: 2px; }
-    .recent-amount { font-weight: 700; flex-shrink: 0; }
-    .recent-amount.income { color: var(--green); }
-    .recent-amount.expense { color: var(--red); }
-    .recent-empty { font-size: 0.9rem; color: #888; }
-    .actions { display: flex; gap: 12px; margin-top: 8px; }
-    .btn {
-      flex: 1;
-      padding: 16px 12px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      transition: transform 0.1s ease, box-shadow 0.15s ease;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn-income { background: var(--green); color: #fff; }
-    .btn-expense { background: #fff; color: var(--green); border: 2px solid var(--green); }
-    .btn-ghost { background: #f0f0f0; color: #333; box-shadow: none; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 900;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-      padding: 16px;
-    }
-    .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
-    @media (min-height: 520px) {
-      .modal-backdrop { align-items: center; }
-    }
-    .modal {
-      background: #fff;
-      border-radius: 20px;
-      padding: 22px;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: var(--shadow-lg);
-      transform: translateY(16px);
-      transition: transform 0.2s ease;
-    }
-    .modal-backdrop.visible .modal { transform: translateY(0); }
-    .modal h2 { font-size: 1.15rem; margin-bottom: 16px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-    .modal-actions .btn { margin: 0; }
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 32px;
-      transform: translateX(-50%) translateY(100px);
-      background: #1a1a1a;
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      box-shadow: var(--shadow-lg);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      z-index: 1000;
-      max-width: calc(100% - 32px);
-      text-align: center;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app">
@@ -455,6 +97,10 @@
           <button class="menu-logout" id="logoutBtn" type="button">Log out</button>
         </div>
       </div>
+      <div class="banner" id="limitBanner">
+        <span id="limitBannerText"></span>
+        <button class="banner-close" id="limitBannerClose" type="button">×</button>
+      </div>
 
       <header>
         <h1 id="greetingText">Hey Ravi 👋</h1>
@@ -471,6 +117,29 @@
           <p class="amount" id="spentToday">₹0</p>
         </section>
       </div>
+
+      <section class="card">
+        <div class="limits-head">
+          <h2 class="limits-title" id="limitsTitle">Spending limits</h2>
+          <button type="button" class="limits-settings" id="limitsSettingsBtn">⚙</button>
+        </div>
+        <div class="limit-row">
+          <div class="limit-top">
+            <span id="limitsWeekLabel">This week</span>
+            <span id="limitsWeekValue">₹3,000</span>
+          </div>
+          <div class="limit-track"><div class="limit-fill" id="weekLimitFill"></div></div>
+          <div class="limit-meta" id="weekLimitMeta">₹0 of ₹3,000 spent</div>
+        </div>
+        <div class="limit-row">
+          <div class="limit-top">
+            <span id="limitsMonthLabel">This month</span>
+            <span id="limitsMonthValue">₹10,000</span>
+          </div>
+          <div class="limit-track"><div class="limit-fill" id="monthLimitFill"></div></div>
+          <div class="limit-meta" id="monthLimitMeta">₹0 of ₹10,000 spent</div>
+        </div>
+      </section>
 
       <section class="card">
         <h2 class="forecast-title" id="forecastTitle">This week forecast</h2>
@@ -492,6 +161,10 @@
       <div class="actions">
         <button type="button" class="btn btn-income" id="btnIncome">Log Income</button>
         <button type="button" class="btn btn-expense" id="btnExpense">Log Expense</button>
+        <button type="button" class="btn btn-mic" id="btnVoice" aria-label="Voice input">
+          🎤
+          <span class="mic-dot" aria-hidden="true"></span>
+        </button>
       </div>
     </section>
   </div>
@@ -515,15 +188,35 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite">Saved ✓</div>
+  <div class="modal-backdrop" id="limitsModalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="limitsModalTitle">
+      <h2 id="limitsModalTitle">Spending limits</h2>
+      <div class="field">
+        <label id="weeklyLimitLabel" for="weeklyLimitInput">Weekly limit (₹)</label>
+        <input type="number" id="weeklyLimitInput" min="0" step="1" />
+      </div>
+      <div class="field">
+        <label id="monthlyLimitLabel" for="monthlyLimitInput">Monthly limit (₹)</label>
+        <input type="number" id="monthlyLimitInput" min="0" step="1" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="limitsCancel">Cancel</button>
+        <button type="button" class="btn btn-income" id="limitsSave">Save</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
       var STORAGE_USER_KEY = "gigbudget_user";
       var STORAGE_ENTRIES_KEY = "gigbudget_entries";
+      var STORAGE_LIMITS_KEY = "gigbudget_limits";
       var BAR_MAX_PX = 100;
       var currentScreen = "splash";
       var selectedSignupLanguage = "en";
       var modalType = "income";
+      var speechRecognition = null;
+      var limitBannerDismissed = false;
 
       var translations = {
         en: {
@@ -546,6 +239,17 @@
           amount: "Amount (₹)",
           noEntries: "No entries yet.",
           logout: "Log out",
+          spendingLimits: "Spending limits",
+          thisWeek: "This week",
+          thisMonth: "This month",
+          spentOf: "spent",
+          weeklyLimit: "Weekly limit (₹)",
+          monthlyLimit: "Monthly limit (₹)",
+          notCaughtVoice: "Didn't catch that — try saying 'income 500 delivery'",
+          crossedWeekly: "⚠️ You have crossed your weekly spending limit!",
+          crossedMonthly: "⚠️ You have crossed your monthly spending limit!",
+          closeWeekly: "⚠️ You are close to your weekly limit — ₹{remaining} left",
+          closeMonthly: "⚠️ You are close to your monthly limit — ₹{remaining} left",
           days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
           categories: {
             delivery: "Delivery",
@@ -579,6 +283,17 @@
           amount: "राशि (₹)",
           noEntries: "अभी कोई एंट्री नहीं।",
           logout: "लॉग आउट",
+          spendingLimits: "खर्च सीमा",
+          thisWeek: "इस हफ्ते",
+          thisMonth: "इस महीने",
+          spentOf: "खर्च हुआ",
+          weeklyLimit: "साप्ताहिक सीमा (₹)",
+          monthlyLimit: "मासिक सीमा (₹)",
+          notCaughtVoice: "समझ नहीं आया — बोलिए 'पाँच सौ रुपय डिलीवरी से कमाए'",
+          crossedWeekly: "⚠️ आपने साप्ताहिक खर्च सीमा पार कर ली है!",
+          crossedMonthly: "⚠️ आपने मासिक खर्च सीमा पार कर ली है!",
+          closeWeekly: "⚠️ आप साप्ताहिक सीमा के करीब हैं — ₹{remaining} बाकी",
+          closeMonthly: "⚠️ आप मासिक सीमा के करीब हैं — ₹{remaining} बाकी",
           days: ["सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि", "रवि"],
           categories: {
             delivery: "डिलीवरी",
@@ -612,6 +327,17 @@
           amount: "ಮೊತ್ತ (₹)",
           noEntries: "ಇನ್ನೂ ಯಾವುದೇ ನಮೂದುಗಳಿಲ್ಲ.",
           logout: "ಲಾಗ್ ಔಟ್",
+          spendingLimits: "ಖರ್ಚಿನ ಮಿತಿ",
+          thisWeek: "ಈ ವಾರ",
+          thisMonth: "ಈ ತಿಂಗಳು",
+          spentOf: "ಖರ್ಚಾಗಿದೆ",
+          weeklyLimit: "ವಾರದ ಮಿತಿ (₹)",
+          monthlyLimit: "ಮಾಸಿಕ ಮಿತಿ (₹)",
+          notCaughtVoice: "ಅರ್ಥವಾಗಲಿಲ್ಲ — ಹೇಳಿ 'ಐದು ನೂರು ರೂಪಾಯಿ ಡೆಲಿವರಿ ಆದಾಯ'",
+          crossedWeekly: "⚠️ ನೀವು ವಾರದ ಖರ್ಚಿನ ಮಿತಿಯನ್ನು ಮೀರಿದ್ದೀರಿ!",
+          crossedMonthly: "⚠️ ನೀವು ಮಾಸಿಕ ಖರ್ಚಿನ ಮಿತಿಯನ್ನು ಮೀರಿದ್ದೀರಿ!",
+          closeWeekly: "⚠️ ನೀವು ವಾರದ ಮಿತಿಗೆ ಹತ್ತಿರಿದ್ದೀರಿ — ₹{remaining} ಉಳಿದಿದೆ",
+          closeMonthly: "⚠️ ನೀವು ಮಾಸಿಕ ಮಿತಿಗೆ ಹತ್ತಿರಿದ್ದೀರಿ — ₹{remaining} ಉಳಿದಿದೆ",
           days: ["ಸೋಮ", "ಮಂಗಳ", "ಬುಧ", "ಗುರು", "ಶುಕ್ರ", "ಶನಿ", "ಭಾನು"],
           categories: {
             delivery: "ಡೆಲಿವರಿ",
@@ -645,6 +371,17 @@
           amount: "మొత్తం (₹)",
           noEntries: "ఇంకా ఎంట్రీలు లేవు.",
           logout: "లాగ్ అవుట్",
+          spendingLimits: "ఖర్చు పరిమితులు",
+          thisWeek: "ఈ వారం",
+          thisMonth: "ఈ నెల",
+          spentOf: "ఖర్చైంది",
+          weeklyLimit: "వారపు పరిమితి (₹)",
+          monthlyLimit: "నెలవారీ పరిమితి (₹)",
+          notCaughtVoice: "అర్థం కాలేదు — చెప్పండి 'ఐదు వందల రూపాయలు డెలివరీ సంపాదన'",
+          crossedWeekly: "⚠️ మీరు వారపు ఖర్చు పరిమితిని దాటారు!",
+          crossedMonthly: "⚠️ మీరు నెలవారీ ఖర్చు పరిమితిని దాటారు!",
+          closeWeekly: "⚠️ మీరు వారపు పరిమితికి దగ్గరలో ఉన్నారు — ₹{remaining} మిగిలింది",
+          closeMonthly: "⚠️ మీరు నెలవారీ పరిమితికి దగ్గరలో ఉన్నారు — ₹{remaining} మిగిలింది",
           days: ["సోమ", "మంగళ", "బుధ", "గురు", "శుక్ర", "శని", "ఆది"],
           categories: {
             delivery: "డెలివరీ",
@@ -678,6 +415,17 @@
           amount: "തുക (₹)",
           noEntries: "ഇനിയും എൻട്രികളില്ല.",
           logout: "ലോഗ് ഔട്ട്",
+          spendingLimits: "ചെലവ് പരിധികൾ",
+          thisWeek: "ഈ ആഴ്ച",
+          thisMonth: "ഈ മാസം",
+          spentOf: "ചെലവായി",
+          weeklyLimit: "ആഴ്ച പരിധി (₹)",
+          monthlyLimit: "മാസ പരിധി (₹)",
+          notCaughtVoice: "മനസ്സിലായില്ല — പറയൂ 'അഞ്ഞൂറ് രൂപ ഡെലിവറി വരുമാനം'",
+          crossedWeekly: "⚠️ നിങ്ങൾ ആഴ്ചച്ചെലവ് പരിധി കവിഞ്ഞു!",
+          crossedMonthly: "⚠️ നിങ്ങൾ മാസച്ചെലവ് പരിധി കവിഞ്ഞു!",
+          closeWeekly: "⚠️ ആഴ്ച പരിധിയോട് അടുത്തിരിക്കുന്നു — ₹{remaining} ബാക്കി",
+          closeMonthly: "⚠️ മാസ പരിധിയോട് അടുത്തിരിക്കുന്നു — ₹{remaining} ബാക്കി",
           days: ["തിങ്ക", "ചൊവ്വ", "ബുധ", "വ്യാഴ", "വെള്ളി", "ശനി", "ഞായർ"],
           categories: {
             delivery: "ഡെലിവറി",
@@ -723,6 +471,7 @@
         recentList: document.getElementById("recentList"),
         btnIncome: document.getElementById("btnIncome"),
         btnExpense: document.getElementById("btnExpense"),
+        btnVoice: document.getElementById("btnVoice"),
         avatarBtn: document.getElementById("avatarBtn"),
         avatarMenu: document.getElementById("avatarMenu"),
         menuName: document.getElementById("menuName"),
@@ -756,7 +505,28 @@
         signupConfirmPasswordErr: document.getElementById("signupConfirmPasswordErr"),
         signupLanguageErr: document.getElementById("signupLanguageErr"),
         btnSignup: document.getElementById("btnSignup"),
-        langRow: document.getElementById("langRow")
+        langRow: document.getElementById("langRow"),
+        limitsTitle: document.getElementById("limitsTitle"),
+        limitsWeekLabel: document.getElementById("limitsWeekLabel"),
+        limitsMonthLabel: document.getElementById("limitsMonthLabel"),
+        limitsWeekValue: document.getElementById("limitsWeekValue"),
+        limitsMonthValue: document.getElementById("limitsMonthValue"),
+        weekLimitFill: document.getElementById("weekLimitFill"),
+        monthLimitFill: document.getElementById("monthLimitFill"),
+        weekLimitMeta: document.getElementById("weekLimitMeta"),
+        monthLimitMeta: document.getElementById("monthLimitMeta"),
+        limitsSettingsBtn: document.getElementById("limitsSettingsBtn"),
+        limitsModalBackdrop: document.getElementById("limitsModalBackdrop"),
+        limitsModalTitle: document.getElementById("limitsModalTitle"),
+        weeklyLimitInput: document.getElementById("weeklyLimitInput"),
+        monthlyLimitInput: document.getElementById("monthlyLimitInput"),
+        weeklyLimitLabel: document.getElementById("weeklyLimitLabel"),
+        monthlyLimitLabel: document.getElementById("monthlyLimitLabel"),
+        limitsCancel: document.getElementById("limitsCancel"),
+        limitsSave: document.getElementById("limitsSave"),
+        limitBanner: document.getElementById("limitBanner"),
+        limitBannerText: document.getElementById("limitBannerText"),
+        limitBannerClose: document.getElementById("limitBannerClose")
       };
       var toastTimer;
 
@@ -785,6 +555,30 @@
       }
       function saveEntries(entries) {
         localStorage.setItem(STORAGE_ENTRIES_KEY, JSON.stringify(entries));
+      }
+      function loadLimits() {
+        try {
+          var raw = localStorage.getItem(STORAGE_LIMITS_KEY);
+          if (!raw) return null;
+          var x = JSON.parse(raw);
+          if (!x) return null;
+          return {
+            weekly: Number(x.weekly) || 3000,
+            monthly: Number(x.monthly) || 10000
+          };
+        } catch (e) {
+          return null;
+        }
+      }
+      function saveLimits(limits) {
+        localStorage.setItem(STORAGE_LIMITS_KEY, JSON.stringify(limits));
+      }
+      function ensureLimits() {
+        var x = loadLimits();
+        if (x) return x;
+        x = { weekly: 3000, monthly: 10000 };
+        saveLimits(x);
+        return x;
       }
       function t() {
         var u = loadUser();
@@ -819,6 +613,14 @@
       }
       function showToast() {
         els.toast.textContent = t().savedToast;
+        els.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          els.toast.classList.remove("show");
+        }, 2200);
+      }
+      function showCustomToast(message) {
+        els.toast.textContent = message;
         els.toast.classList.add("show");
         clearTimeout(toastTimer);
         toastTimer = setTimeout(function () {
@@ -901,6 +703,251 @@
       function translateCategory(categoryValue, lang) {
         return translations[lang].categories[categoryValue] || categoryValue || "—";
       }
+      function getColorForPct(pct) {
+        if (pct >= 0.9) return "var(--red)";
+        if (pct >= 0.6) return "var(--amber)";
+        return "var(--green)";
+      }
+      function getWeekStart(d) {
+        var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        var day = x.getDay();
+        var diff = day === 0 ? -6 : 1 - day;
+        x.setDate(x.getDate() + diff);
+        x.setHours(0, 0, 0, 0);
+        return x;
+      }
+      function getMonthStart(d) {
+        var x = new Date(d.getFullYear(), d.getMonth(), 1);
+        x.setHours(0, 0, 0, 0);
+        return x;
+      }
+      function sumExpensesInRange(entries, startDate, endDate) {
+        var start = startDate.getTime();
+        var end = endDate.getTime();
+        var total = 0;
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          if (e.type !== "expense") continue;
+          var tms = parseYMD(e.date).getTime();
+          if (tms >= start && tms <= end) total += Number(e.amount) || 0;
+        }
+        return total;
+      }
+      function renderLimits(entries) {
+        var tx = t();
+        var limits = ensureLimits();
+        var now = new Date();
+        var weekStart = getWeekStart(now);
+        var monthStart = getMonthStart(now);
+        var weekSpent = sumExpensesInRange(entries, weekStart, now);
+        var monthSpent = sumExpensesInRange(entries, monthStart, now);
+
+        var weekPct = limits.weekly > 0 ? Math.min(weekSpent / limits.weekly, 1) : 1;
+        var monthPct = limits.monthly > 0 ? Math.min(monthSpent / limits.monthly, 1) : 1;
+        els.limitsWeekValue.textContent = "₹" + limits.weekly.toLocaleString("en-IN");
+        els.limitsMonthValue.textContent = "₹" + limits.monthly.toLocaleString("en-IN");
+        els.weekLimitFill.style.width = Math.round(weekPct * 100) + "%";
+        els.monthLimitFill.style.width = Math.round(monthPct * 100) + "%";
+        els.weekLimitFill.style.background = getColorForPct(weekPct);
+        els.monthLimitFill.style.background = getColorForPct(monthPct);
+        els.weekLimitMeta.textContent = "₹" + Math.round(weekSpent).toLocaleString("en-IN") + " of ₹" + limits.weekly.toLocaleString("en-IN") + " " + tx.spentOf;
+        els.monthLimitMeta.textContent = "₹" + Math.round(monthSpent).toLocaleString("en-IN") + " of ₹" + limits.monthly.toLocaleString("en-IN") + " " + tx.spentOf;
+
+        if (!limitBannerDismissed) {
+          var message = "";
+          var cls = "";
+          if (weekSpent > limits.weekly) {
+            message = tx.crossedWeekly;
+            cls = "banner-red";
+          } else if (monthSpent > limits.monthly) {
+            message = tx.crossedMonthly;
+            cls = "banner-red";
+          } else if (limits.weekly > 0 && weekSpent / limits.weekly >= 0.9) {
+            message = tx.closeWeekly.replace("{remaining}", Math.max(0, Math.round(limits.weekly - weekSpent)).toLocaleString("en-IN"));
+            cls = "banner-amber";
+          } else if (limits.monthly > 0 && monthSpent / limits.monthly >= 0.9) {
+            message = tx.closeMonthly.replace("{remaining}", Math.max(0, Math.round(limits.monthly - monthSpent)).toLocaleString("en-IN"));
+            cls = "banner-amber";
+          }
+          if (message) {
+            els.limitBanner.classList.add("show");
+            els.limitBanner.classList.remove("banner-red", "banner-amber");
+            els.limitBanner.classList.add(cls);
+            els.limitBannerText.textContent = message;
+          } else {
+            els.limitBanner.classList.remove("show");
+          }
+        }
+      }
+      function parseSpeechText(text) {
+        function getUserLangCode() {
+          var u = loadUser() || {};
+          return u.language || "en";
+        }
+        function tokenize(s) {
+          return s
+            .toLowerCase()
+            .replace(/[.,!?;:/\\()|[\]{}"'`]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .split(" ")
+            .filter(Boolean);
+        }
+        function parseWordNumber(tokens, lang) {
+          var wordsByLang = {
+            en: {
+              one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+              ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
+              seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50,
+              sixty: 60, seventy: 70, eighty: 80, ninety: 90, hundred: 100, thousand: 1000, lakh: 100000
+            },
+            hi: {
+              ek: 1, do: 2, teen: 3, chaar: 4, paanch: 5, chhe: 6, saat: 7, aath: 8, nau: 9, das: 10,
+              gyarah: 11, barah: 12, terah: 13, chaudah: 14, pandrah: 15, solah: 16, satrah: 17,
+              atharah: 18, unnis: 19, bees: 20, tees: 30, chaalees: 40, pachaas: 50, saath: 60,
+              sattar: 70, assi: 80, nabbe: 90, sau: 100, hazaar: 1000, lakh: 100000
+            },
+            kn: {
+              ondu: 1, eradu: 2, mooru: 3, naalku: 4, aidu: 5, aaru: 6, yelu: 7, entu: 8, ombattu: 9,
+              hattu: 10, nooru: 100, saavira: 1000, laksha: 100000
+            },
+            te: {
+              okati: 1, rendu: 2, muudu: 3, naalugu: 4, aidu: 5, aaru: 6, yedu: 7, enimidi: 8,
+              tommidi: 9, padi: 10, nooru: 100, veyyi: 1000, laksha: 100000
+            },
+            ml: {
+              onnu: 1, randu: 2, moonnu: 3, naalu: 4, anchu: 5, aaru: 6, ezhu: 7, ettu: 8, onpathu: 9,
+              pathu: 10, nooru: 100, aayiram: 1000, laksham: 100000
+            }
+          };
+          var map = wordsByLang[lang] || wordsByLang.en;
+          var current = 0;
+          var total = 0;
+          var seen = false;
+          for (var i = 0; i < tokens.length; i++) {
+            var val = map[tokens[i]];
+            if (!val) continue;
+            seen = true;
+            if (val === 100 || val === 1000 || val === 100000) {
+              if (current === 0) current = 1;
+              current = current * val;
+              if (val >= 1000) {
+                total += current;
+                current = 0;
+              }
+            } else {
+              current += val;
+            }
+          }
+          total += current;
+          return seen ? total : null;
+        }
+        var s = String(text || "").toLowerCase();
+        var lang = getUserLangCode();
+        var triggerWords = {
+          en: {
+            income: ["income", "earned", "received", "got", "made"],
+            expense: ["spent", "expense", "paid", "bought", "used"]
+          },
+          hi: {
+            income: ["kamaye", "kamai", "mila", "mile", "kama", "aamdani", "prapt", "aaya", "aai"],
+            expense: ["kharch", "kharcha", "diya", "liya", "gaya", "khareeda", "vyay"]
+          },
+          kn: {
+            income: ["galistide", "sigithu", "kamayisida", "banditu", "aadaaya"],
+            expense: ["kharchu", "kharchisida", "kodisida", "toogonditu", "vyaya"]
+          },
+          te: {
+            income: ["vastundi", "vacchindi", "sampaadinchanu", "vacche", "aadaayam"],
+            expense: ["kharchu", "kharchupettanu", "icchanu", "tiisukunnanu", "vyayam"]
+          },
+          ml: {
+            income: ["kitthi", "kittichu", "sampaadhichu", "vanthu", "varumanam"],
+            expense: ["chhelavu", "chelavakki", "koduthu", "vaangi", "vyayam"]
+          }
+        };
+        var categoryAliases = {
+          delivery: ["delivery", "डिलीवरी", "ಡೆಲಿವರಿ", "డెలివరీ", "ഡെലിവറി", "zomato", "swiggy", "dunzo", "porter"],
+          freelance: ["freelance", "ಫ್ರೀಲಾನ್ಸ್", "फ्रीलांस", "పని", "പണി", "kaam", "काम", "kelsa"],
+          labour: ["labour", "labor", "majdoori", "मजदूरी", "ಕೂಲಿ", "కూలి", "കൂലി"],
+          tuition: ["tuition", "padhai", "पढ़ाई", "ಟ್ಯೂಷನ್", "ట్యూషన్", "ട്യൂഷൻ"],
+          food: ["food", "khana", "खाना", "ಊಟ", "తిండి", "ഭക്ഷണം", "hotel", "bhojan"],
+          fuel: ["fuel", "petrol", "पेट्रोल", "ಪೆಟ್ರೋಲ್", "పెట్రోల్", "പെട്രോൾ", "diesel"],
+          rent: ["rent", "kiraya", "किराया", "ಬಾಡಿಗೆ", "అద్దె", "വാടക"],
+          mobile: ["mobile", "phone", "recharge", "ರಿಚಾರ್ಜ್", "రీఛార్జ్", "റീചാർജ്", "internet"]
+        };
+        var tw = triggerWords[lang] || triggerWords.en;
+        var type = null;
+        for (var i = 0; i < tw.income.length; i++) {
+          if (s.indexOf(tw.income[i]) !== -1) { type = "income"; break; }
+        }
+        if (!type) {
+          for (var j = 0; j < tw.expense.length; j++) {
+            if (s.indexOf(tw.expense[j]) !== -1) { type = "expense"; break; }
+          }
+        }
+        if (!type) return null;
+        var tokens = tokenize(s);
+        var wordAmount = parseWordNumber(tokens, lang);
+        var digitMatch = s.match(/(\d+(?:\.\d+)?)/);
+        var digitAmount = digitMatch ? Number(digitMatch[1]) : null;
+        var amount = null;
+        if (wordAmount !== null && digitAmount !== null) amount = Math.max(wordAmount, digitAmount);
+        else if (wordAmount !== null) amount = wordAmount;
+        else if (digitAmount !== null) amount = digitAmount;
+        if (amount === null || isNaN(amount)) return null;
+        var cat = "other";
+        for (var key in categoryAliases) {
+          if (!Object.prototype.hasOwnProperty.call(categoryAliases, key)) continue;
+          var aliases = categoryAliases[key];
+          for (var k = 0; k < aliases.length; k++) {
+            if (s.indexOf(String(aliases[k]).toLowerCase()) !== -1) {
+              cat = key;
+              break;
+            }
+          }
+          if (cat !== "other") break;
+        }
+        return { type: type, amount: amount, category: cat };
+      }
+      function getSpeechLang() {
+        var user = loadUser() || {};
+        var map = { en: "en-IN", hi: "hi-IN", kn: "kn-IN", te: "te-IN", ml: "ml-IN" };
+        return map[user.language] || "en-IN";
+      }
+      function startVoiceInput() {
+        var SR = window.webkitSpeechRecognition;
+        if (!SR) {
+          showCustomToast("Speech not supported in this browser.");
+          return;
+        }
+        if (speechRecognition) {
+          try { speechRecognition.stop(); } catch (e) {}
+          speechRecognition = null;
+        }
+        speechRecognition = new SR();
+        speechRecognition.lang = getSpeechLang();
+        speechRecognition.interimResults = false;
+        speechRecognition.maxAlternatives = 1;
+        els.btnVoice.classList.add("listening");
+        speechRecognition.onresult = function (ev) {
+          var transcript = ev.results[0][0].transcript;
+          var parsed = parseSpeechText(transcript);
+          if (!parsed || !parsed.amount) {
+            showCustomToast(t().notCaughtVoice);
+            return;
+          }
+          openModal(parsed.type, { amount: parsed.amount, category: parsed.category });
+        };
+        speechRecognition.onerror = function () {
+          showCustomToast(t().notCaughtVoice);
+        };
+        speechRecognition.onend = function () {
+          els.btnVoice.classList.remove("listening");
+          speechRecognition = null;
+        };
+        speechRecognition.start();
+      }
 
       function applyHomeTranslations() {
         var tx = t();
@@ -919,6 +966,12 @@
         els.modalCategoryLabel.textContent = tx.category;
         els.modalAmountLabel.textContent = tx.amount;
         els.logoutBtn.textContent = tx.logout;
+        els.limitsTitle.textContent = tx.spendingLimits;
+        els.limitsWeekLabel.textContent = tx.thisWeek;
+        els.limitsMonthLabel.textContent = tx.thisMonth;
+        els.limitsModalTitle.textContent = tx.spendingLimits;
+        els.weeklyLimitLabel.textContent = tx.weeklyLimit;
+        els.monthlyLimitLabel.textContent = tx.monthlyLimit;
         els.menuName.textContent = user.name || "";
         els.menuLang.textContent = tx.langName;
         els.avatarBtn.textContent = getInitials(user.name);
@@ -937,6 +990,7 @@
 
       function renderHomeData() {
         seedIfEmpty();
+        ensureLimits();
         applyHomeTranslations();
         refreshCategoryOptions();
         var entries = loadEntries();
@@ -1000,14 +1054,15 @@
             els.recentList.appendChild(li);
           }
         }
+        renderLimits(entries);
       }
 
-      function openModal(type) {
+      function openModal(type, defaults) {
         modalType = type;
         var tx = t();
         els.modalTitle.textContent = type === "income" ? tx.modalLogIncome : tx.modalLogExpense;
-        els.fieldAmount.value = "";
-        els.fieldCategory.value = "delivery";
+        els.fieldAmount.value = defaults && defaults.amount ? String(defaults.amount) : "";
+        els.fieldCategory.value = defaults && defaults.category ? defaults.category : "delivery";
         els.modalBackdrop.classList.add("visible");
         els.modalBackdrop.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
@@ -1036,6 +1091,26 @@
         saveEntries(entries);
         closeModal();
         showToast();
+        renderHomeData();
+      }
+      function openLimitsModal() {
+        var limits = ensureLimits();
+        els.weeklyLimitInput.value = String(limits.weekly);
+        els.monthlyLimitInput.value = String(limits.monthly);
+        els.limitsModalBackdrop.classList.add("visible");
+        els.limitsModalBackdrop.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+      }
+      function closeLimitsModal() {
+        els.limitsModalBackdrop.classList.remove("visible");
+        els.limitsModalBackdrop.setAttribute("aria-hidden", "true");
+        if (!els.modalBackdrop.classList.contains("visible")) document.body.classList.remove("modal-open");
+      }
+      function saveLimitsFromModal() {
+        var weekly = Math.max(0, Number(els.weeklyLimitInput.value) || 0);
+        var monthly = Math.max(0, Number(els.monthlyLimitInput.value) || 0);
+        saveLimits({ weekly: weekly, monthly: monthly });
+        closeLimitsModal();
         renderHomeData();
       }
 
@@ -1123,11 +1198,21 @@
       function bindHomeEvents() {
         els.btnIncome.addEventListener("click", function () { openModal("income"); });
         els.btnExpense.addEventListener("click", function () { openModal("expense"); });
+        els.btnVoice.addEventListener("click", startVoiceInput);
         els.modalCancel.addEventListener("click", closeModal);
         els.modalSave.addEventListener("click", saveModalEntry);
         els.modalBackdrop.addEventListener("click", function (ev) { if (ev.target === els.modalBackdrop) closeModal(); });
+        els.limitsSettingsBtn.addEventListener("click", openLimitsModal);
+        els.limitsCancel.addEventListener("click", closeLimitsModal);
+        els.limitsSave.addEventListener("click", saveLimitsFromModal);
+        els.limitsModalBackdrop.addEventListener("click", function (ev) { if (ev.target === els.limitsModalBackdrop) closeLimitsModal(); });
+        els.limitBannerClose.addEventListener("click", function () {
+          limitBannerDismissed = true;
+          els.limitBanner.classList.remove("show");
+        });
         document.addEventListener("keydown", function (ev) {
           if (ev.key === "Escape" && els.modalBackdrop.classList.contains("visible")) closeModal();
+          if (ev.key === "Escape" && els.limitsModalBackdrop.classList.contains("visible")) closeLimitsModal();
         });
         els.avatarBtn.addEventListener("click", function () {
           els.avatarMenu.classList.toggle("show");
